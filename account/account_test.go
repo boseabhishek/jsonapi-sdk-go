@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
@@ -12,27 +13,26 @@ const (
 	fakeBaseURL string = "/some-version/some-url"
 )
 
-func mockHandler() (mux *http.ServeMux) {
+func setup() (mux *http.ServeMux, client *Client, teardown func()) {
 	mux = http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	srv := httptest.NewServer(mux)
+	client = NewClient()
+
+	url, _ := url.Parse(srv.URL)
+	client.BaseURL = url
+
+	return mux, client, srv.Close
+}
+
+func TestDo_NotOK(t *testing.T) {
+	mux, client, teardown := setup()
+	defer teardown()
+
+	mux.HandleFunc("/b", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", 400)
 	})
 
-	return
-}
-func TestDo_NotOK(t *testing.T) {
-
-	srv := httptest.NewServer(mockHandler())
-	defer srv.Close()
-
-	// client is a fake client used for tested and must be used for test server `server`
-	client := NewClient()
-
-	//url, _ := url.Parse(srv.URL + fakeBaseURL + "/")
-	// overriding the baseURL with a fake one
-	//client.BaseURL = url
-
-	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/", srv.URL), nil)
+	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/", client.BaseURL), nil)
 
 	resp, err := client.Do(req, nil)
 	if err == nil {

@@ -87,3 +87,14 @@ func TestOK_OK(t *testing.T) {
 
 }
 */
+
+
+func setup() (srv *http.Server) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Bad Request", 400)
+	})
+
+	srv = httptest.NewServer(mux)
+
+	
