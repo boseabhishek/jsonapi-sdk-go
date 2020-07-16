@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"testing"
 )
 
 const (
-	fakeBaseURL string = "/some-version/some-url"
+	apiURL string = "/api-url"
 )
 
 func setup() (mux *http.ServeMux, client *Client, teardown func()) {
@@ -18,53 +19,84 @@ func setup() (mux *http.ServeMux, client *Client, teardown func()) {
 	srv := httptest.NewServer(mux)
 	client = NewClient()
 
-	url, _ := url.Parse(srv.URL)
+	url, _ := url.Parse(srv.URL + apiURL + "/")
 	client.BaseURL = url
 
 	return mux, client, srv.Close
 }
 
-func TestDo_NotOK(t *testing.T) {
+// TODO:: amend all error messages
+
+func TestDo_BadRequest(t *testing.T) {
 	mux, client, teardown := setup()
 	defer teardown()
 
-	mux.HandleFunc("/b", func(w http.ResponseWriter, r *http.Request) {
+	// program the mock
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", 400)
 	})
 
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/", client.BaseURL), nil)
 
-	resp, err := client.Do(req, nil)
+	res, err := client.Do(req, nil)
 	if err == nil {
-		t.Fatal("Expected HTTP 400 error, got no error.")
+		t.Fatalf("expected HTTP %d error, got no error.", http.StatusBadRequest)
 	}
 
-	if resp.StatusCode != 400 {
-		t.Errorf("Expected HTTP 400 error, got %d status code.", resp.StatusCode)
+	if res.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected HTTP %d error, got %d status code.", http.StatusBadRequest, res.StatusCode)
 	}
 }
 
-/*
+func TestDo_NotFound(t *testing.T) {
+	mux, client, teardown := setup()
+	defer teardown()
+
+	id := "not-found-id"
+	// program the mock
+	mux.HandleFunc("/"+id, func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Not Found", 404)
+	})
+
+	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/%s", client.BaseURL, id), nil)
+
+	res, err := client.Do(req, nil)
+	if err == nil {
+		t.Fatalf("expected HTTP %d error, got no error", http.StatusNotFound)
+	}
+
+	if res.StatusCode != http.StatusNotFound {
+		t.Errorf("expected status ; got %v", res.Status)
+	}
+}
+
 func TestOK_OK(t *testing.T) {
-	json := `{
-		"key": "value"
-	}`
-	srv := NewMockServer(http.StatusOK, json)
-	defer srv.Close()
+	mux, client, teardown := setup()
+	defer teardown()
 
-	fakeClient := &account.Client{
-		Client: srv.Client(),
-		URL:    srv.URL + "/get-list/" + "some-id-1",
+	type test struct {
+		Key string
 	}
 
-	res, err := fakeClient.Fetch()
+	id := "present-id"
+	// program the mock
+	mux.HandleFunc("/"+id, func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, `{"Key":"value"}`)
+	})
+
+	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/%s", client.BaseURL, id), nil)
+	data := new(test)
+	res, err := client.Do(req, data)
 	if err != nil {
-		log.Fatal(err)
+		t.Fatalf("expected HTTP %d success, got error %v", http.StatusOK, err)
+	}
+	want := &test{"value"}
+	if !reflect.DeepEqual(data, want) {
+		t.Errorf("response body = %v, want %v", data, want)
 	}
 
-	if json != string(res) {
-		t.Errorf("response body doesn't match: want %s but got %s", json, string(res))
+	if res.StatusCode != http.StatusOK {
+		t.Errorf("expected status OK; got %v", http.StatusText(res.StatusCode))
 	}
 
 }
-*/
