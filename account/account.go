@@ -1,4 +1,4 @@
-// TODO:: account must be renamed to form3
+// Package account TODO:: account must be renamed to form3
 package account
 
 import (
@@ -22,6 +22,7 @@ type Client struct {
 	BaseURL *url.URL
 }
 
+// NewClient func
 func NewClient() *Client {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	return &Client{

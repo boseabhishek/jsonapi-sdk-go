@@ -1,11 +1,10 @@
-// TODO:: account must be renamed to form3
+// Package account TODO:: account must be renamed to form3
 package account
 
 import (
-	ac "go-rest/account"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
 )
 
@@ -13,41 +12,33 @@ const (
 	fakeBaseURL string = "/some-version/some-url"
 )
 
-func setup() (client *ac.Client, mux *http.ServeMux, serverURL string, teardown func()) {
-	// mux is the HTTP request multiplexer used with the test server.
+func mockHandler() (mux *http.ServeMux) {
 	mux = http.NewServeMux()
-
-	// server is a test HTTP server used to provide mock API responses.
-	// TODO:: change to a handler impl (see notes Amit Saha)
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-		w.Write([]byte("Success!"))
-	}))
-
-	// client is a fake client used for tested and must be used for test server `server`
-	client = ac.NewClient()
-
-	url, _ := url.Parse(server.URL + fakeBaseURL + "/")
-	// overriding the baseURL with a fake one
-	client.BaseURL = url
-
-	return client, mux, server.URL, server.Close
-}
-
-func TestDo_NotOK(t *testing.T) {
-	client, mux, _, teardown := setup()
-	defer teardown()
-
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", 400)
 	})
 
-	req, _ := client.NewRequest("GET", ".", nil)
+	return
+}
+func TestDo_NotOK(t *testing.T) {
+
+	srv := httptest.NewServer(mockHandler())
+	defer srv.Close()
+
+	// client is a fake client used for tested and must be used for test server `server`
+	client := NewClient()
+
+	//url, _ := url.Parse(srv.URL + fakeBaseURL + "/")
+	// overriding the baseURL with a fake one
+	//client.BaseURL = url
+
+	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/", srv.URL), nil)
 
 	resp, err := client.Do(req, nil)
 	if err == nil {
 		t.Fatal("Expected HTTP 400 error, got no error.")
 	}
+
 	if resp.StatusCode != 400 {
 		t.Errorf("Expected HTTP 400 error, got %d status code.", resp.StatusCode)
 	}
