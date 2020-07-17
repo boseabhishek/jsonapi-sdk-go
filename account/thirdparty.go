@@ -1,16 +1,15 @@
-// Package thirdparty .....
-package thirdparty
+// Package account .....
+package account
 
 import (
 	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
-	"net/url"
 )
 
 const (
-	// BaseURL for REST API
+	// BaseURL for JSON Placeholder REST API
 	defaultBaseURL = "https://jsonplaceholder.typicode.com/"
 
 	//defaultMediaType = "application/vnd.api+json"
@@ -18,23 +17,28 @@ const (
 
 // Client is responsible for communicating with JSON Placeholder API.
 type Client struct {
-	Client  *http.Client
-	BaseURL *url.URL
+	apiKey  string
+	BaseURL string
+
+	Client *http.Client
+
+	Accounts AccountsService
 }
 
-// NewClient func is responsible for creating a new thirdparty client
+// NewClient func is responsible for creating a new client
 func NewClient() *Client {
-	baseURL, _ := url.Parse(defaultBaseURL)
-	return &Client{
+	c := &Client{
 		Client:  &http.Client{},
-		BaseURL: baseURL,
+		BaseURL: defaultBaseURL,
 	}
+	c.Accounts.client = c
+	c.Accounts = c.Accounts
+	return c
 }
 
 // NewRequest creates a custom new http request by setting the method, url and body
-func (fc *Client) NewRequest(verb, url string, data interface{}) (*http.Request, error) {
-	//TODO:: try url parse (see also notes)
-	// fix bytes.NewBuffer(jsonReq)
+func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Request, error) {
+
 	var buf io.ReadWriter
 	if data != nil { // mostly for POST, PUT etc.
 		buf = &bytes.Buffer{}
@@ -45,7 +49,10 @@ func (fc *Client) NewRequest(verb, url string, data interface{}) (*http.Request,
 			return nil, err
 		}
 	}
-	req, err := http.NewRequest(verb, defaultBaseURL+url, buf)
+	//TODO:: change defaultBaseURL to c.BaseURL
+	url := c.BaseURL + resource
+
+	req, err := http.NewRequest(verb, url, buf)
 	return req, err
 }
 

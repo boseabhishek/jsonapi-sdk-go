@@ -1,11 +1,10 @@
-// Package thirdparty .....
-package thirdparty
+// Package account .....
+package account
 
 import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
 	"testing"
 )
@@ -19,7 +18,7 @@ func setup() (mux *http.ServeMux, client *Client, teardown func()) {
 	srv := httptest.NewServer(mux)
 	client = NewClient()
 
-	url, _ := url.Parse(srv.URL + apiURL + "/")
+	url := srv.URL + apiURL + "/"
 	client.BaseURL = url
 
 	return mux, client, srv.Close
@@ -36,15 +35,15 @@ func TestDo_BadRequest(t *testing.T) {
 		http.Error(w, "Bad Request", 400)
 	})
 
-	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/", client.BaseURL), nil)
+	req, _ := client.NewRequest("GET", fmt.Sprintf("%s", "."), nil)
 
 	res, err := client.Do(req, nil)
 	if err == nil {
-		t.Fatalf("expected HTTP %d error, got no error.", http.StatusBadRequest)
+		t.Fatalf("expected HTTP %d error, got no error", http.StatusBadRequest)
 	}
 
 	if res.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected HTTP %d error, got %d status code.", http.StatusBadRequest, res.StatusCode)
+		t.Errorf("expected HTTP %d error, got %d status code", http.StatusBadRequest, res.StatusCode)
 	}
 }
 

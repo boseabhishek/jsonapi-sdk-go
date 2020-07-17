@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"go-rest/data"
+	"go-rest/account"
 )
 
 func main() {
 
-	d, _, err := data.NewData().Fetch("1")
+	client := account.NewClient()
+	d, _, err := client.Accounts.Fetch("1")
 	if err != nil {
 		fmt.Printf("Error: %+v\n", err)
 		return
