@@ -54,11 +54,11 @@ func TestDo_NotFound(t *testing.T) {
 
 	id := "not-found-id"
 	// program the mock
-	mux.HandleFunc("/"+id, func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Found", 404)
 	})
 
-	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/%s", client.BaseURL, id), nil)
+	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
 
 	res, err := client.Do(req, nil)
 	if err == nil {
@@ -80,23 +80,26 @@ func TestOK_OK(t *testing.T) {
 
 	id := "present-id"
 	// program the mock
-	mux.HandleFunc("/"+id, func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"Key":"value"}`)
 	})
 
-	req, _ := client.NewRequest("GET", fmt.Sprintf("%s/%s", client.BaseURL, id), nil)
+	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
 	data := new(test)
+
 	res, err := client.Do(req, data)
 	if err != nil {
-		t.Fatalf("expected HTTP %d success, got error %v", http.StatusOK, err)
+		t.Errorf("expected HTTP %d success, got error: %v", http.StatusOK, err)
 	}
 	want := &test{"value"}
+
 	if !reflect.DeepEqual(data, want) {
-		t.Errorf("response body = %v, want %v", data, want)
+		t.Errorf("response body: %v, want: %v", data, want)
 	}
 
 	if res.StatusCode != http.StatusOK {
-		t.Errorf("expected status OK; got %v", http.StatusText(res.StatusCode))
+		t.Errorf("expected status OK; got: %v", http.StatusText(res.StatusCode))
 	}
 
 }
