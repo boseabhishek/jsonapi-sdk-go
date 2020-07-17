@@ -1,20 +1,18 @@
 package main
 
+import (
+	"fmt"
+	"go-rest/data"
+)
+
 func main() {
 
-	/* 	client := &http.Client{
-	   		Timeout: 0,
-	   	}
+	d, _, err := data.NewData().Fetch("1")
+	if err != nil {
+		fmt.Printf("Error: %+v\n", err)
+		return
+	}
 
-	   	api := &connector.API{
-	   		Client: client,
-	   		BaseURL: "https://jsonplaceholder.typicode.com/posts/1",
-	   	}
-
-	   	body, err := api.DoStuff()
-	   	if err != nil {
-	   		fmt.Errorf("error while invoking url: %s", "https://jsonplaceholder.typicode.com/posts/1")
-	   	}
-	   	fmt.Println(body) */
+	fmt.Println(d)
 
 }
