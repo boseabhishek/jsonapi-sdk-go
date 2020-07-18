@@ -39,11 +39,12 @@ func TestDo_BadRequest(t *testing.T) {
 
 	res, err := client.Do(req, nil)
 	if err == nil {
-		t.Fatalf("expected HTTP %d error, got no error", http.StatusBadRequest)
+		t.Fatalf("expected HTTP %s error, got no error", http.StatusText(http.StatusBadRequest))
 	}
 
 	if res.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected HTTP %d error, got %d status code", http.StatusBadRequest, res.StatusCode)
+		t.Errorf("expected HTTP %s error, got %s",
+			http.StatusText(http.StatusBadRequest), http.StatusText(res.StatusCode))
 	}
 }
 
@@ -61,11 +62,12 @@ func TestDo_NotFound(t *testing.T) {
 
 	res, err := client.Do(req, nil)
 	if err == nil {
-		t.Fatalf("expected HTTP %d error, got no error", http.StatusNotFound)
+		t.Fatalf("expected HTTP %s error, got no error", http.StatusText(http.StatusNotFound))
 	}
 
 	if res.StatusCode != http.StatusNotFound {
-		t.Errorf("expected status ; got %v", res.Status)
+		t.Errorf("expected HTTP %s error, got %s",
+			http.StatusText(http.StatusNotFound), http.StatusText(res.StatusCode))
 	}
 }
 
@@ -98,7 +100,8 @@ func TestOK_OK(t *testing.T) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		t.Errorf("expected status OK; got: %v", http.StatusText(res.StatusCode))
+		t.Errorf("expected HTTP %s success; got: %s",
+			http.StatusText(http.StatusOK), http.StatusText(res.StatusCode))
 	}
 
 }
