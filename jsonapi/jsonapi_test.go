@@ -24,8 +24,6 @@ func setup() (mux *http.ServeMux, client *Client, teardown func()) {
 	return mux, client, srv.Close
 }
 
-// TODO:: amend all error messages
-
 func TestDo_BadRequest(t *testing.T) {
 	mux, client, teardown := setup()
 	defer teardown()
@@ -39,11 +37,11 @@ func TestDo_BadRequest(t *testing.T) {
 
 	res, err := client.Do(req, nil)
 	if err == nil {
-		t.Fatalf("expected HTTP %s error, got no error", http.StatusText(http.StatusBadRequest))
+		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusBadRequest))
 	}
 
 	if res.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected HTTP %s error, got %s",
+		t.Errorf("expected: HTTP %s error, got: %s",
 			http.StatusText(http.StatusBadRequest), http.StatusText(res.StatusCode))
 	}
 }
@@ -52,21 +50,20 @@ func TestDo_NotFound(t *testing.T) {
 	mux, client, teardown := setup()
 	defer teardown()
 
-	id := "not-found-id"
-	// program the mock
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not Found", 404)
 	})
 
+	id := "not-found-id"
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
 
 	res, err := client.Do(req, nil)
 	if err == nil {
-		t.Fatalf("expected HTTP %s error, got no error", http.StatusText(http.StatusNotFound))
+		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusNotFound))
 	}
 
 	if res.StatusCode != http.StatusNotFound {
-		t.Errorf("expected HTTP %s error, got %s",
+		t.Errorf("expected: HTTP %s error, got: %s",
 			http.StatusText(http.StatusNotFound), http.StatusText(res.StatusCode))
 	}
 }
@@ -79,28 +76,27 @@ func TestOK_OK(t *testing.T) {
 		Key string
 	}
 
-	id := "present-id"
-	// program the mock
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"Key":"value"}`)
 	})
 
+	id := "present-id"
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
 	data := new(test)
 
 	res, err := client.Do(req, data)
 	if err != nil {
-		t.Errorf("expected HTTP %d success, got error: %v", http.StatusOK, err)
+		t.Errorf("expected: HTTP %d success, got error: %v", http.StatusOK, err)
 	}
 	want := &test{"value"}
 
 	if !reflect.DeepEqual(data, want) {
-		t.Errorf("response body: %v, want: %v", data, want)
+		t.Errorf("response body: %v, expected: %v", data, want)
 	}
 
 	if res.StatusCode != http.StatusOK {
-		t.Errorf("expected HTTP %s success; got: %s",
+		t.Errorf("expected: HTTP %s success; got: %s",
 			http.StatusText(http.StatusOK), http.StatusText(res.StatusCode))
 	}
 
