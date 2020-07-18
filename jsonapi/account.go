@@ -7,7 +7,7 @@ import (
 )
 
 // Account represents an account from JsonAPI
-
+//
 // An Account represents a bank account that is registered with Form3
 type Account struct {
 	UserID int    `json:"userId"`
@@ -28,7 +28,7 @@ func (as *AccountsService) Fetch(ctx context.Context, id string) (*Account, *htt
 	u := fmt.Sprintf("posts/%s", id)
 
 	// create a http request
-	req, err := as.client.NewRequest("GET", u, nil)
+	req, err := as.client.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, nil, err
 	}

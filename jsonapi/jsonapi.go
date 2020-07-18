@@ -12,9 +12,9 @@ import (
 
 const (
 	// BaseURL for JSON Placeholder REST API
-	defaultBaseURL = "https://jsonplaceholder.typicode.com/"
+	baseURL = "https://jsonplaceholder.typicode.com/"
 
-	//defaultMediaType = "application/vnd.api+json"
+	mediaType = "application/vnd.api+json"
 )
 
 // Client is responsible for communicating with JSON Placeholder API.
@@ -31,7 +31,7 @@ type Client struct {
 func NewClient() *Client {
 	c := &Client{
 		Client:  &http.Client{},
-		BaseURL: defaultBaseURL,
+		BaseURL: baseURL,
 	}
 	c.Accounts.client = c
 	c.Accounts = c.Accounts
@@ -41,21 +41,26 @@ func NewClient() *Client {
 // NewRequest creates a custom new http request by setting the method, url and body
 func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Request, error) {
 
-	var buf io.ReadWriter
-	if data != nil { // mostly for POST, PUT etc.
-		buf = &bytes.Buffer{}
-		enc := json.NewEncoder(buf)
-		enc.SetEscapeHTML(false)
-		err := enc.Encode(data)
+	buf := new(bytes.Buffer)
+	if data != nil {
+		err := json.NewEncoder(buf).Encode(data)
 		if err != nil {
 			return nil, err
 		}
 	}
+
 	//TODO:: change defaultBaseURL to c.BaseURL
 	url := c.BaseURL + resource
 
 	req, err := http.NewRequest(verb, url, buf)
-	return req, err
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", mediaType)
+	req.Header.Add("Accept", mediaType)
+
+	return req, nil
 }
 
 // Do invokes a 3rd Party REST API endpoint and recieves a API response back.
@@ -74,6 +79,8 @@ func (c *Client) Do(ctx context.Context, req *http.Request, data interface{}) (*
 			return nil, ctx.Err()
 		default:
 		}
+
+		return nil, err
 	}
 	defer resp.Body.Close()
 
