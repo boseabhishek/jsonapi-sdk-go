@@ -1,5 +1,5 @@
-// Package account .....
-package account
+// Package jsonapi .....
+package jsonapi
 
 import (
 	"bytes"
@@ -59,9 +59,9 @@ func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Requ
 // Do invokes a 3rd Party REST API endpoint and recieves a API response back.
 // The response body is the decoded inside the value pointed by data
 // TODO:: change *http.Response to custom Response
-func (fc *Client) Do(req *http.Request, data interface{}) (*http.Response, error) {
+func (c *Client) Do(req *http.Request, data interface{}) (*http.Response, error) {
 
-	resp, err := fc.Client.Do(req)
+	resp, err := c.Client.Do(req)
 	if err != nil {
 		// TODO:: process err
 		// maybe introduce ctx context.Context as param and then do as below:

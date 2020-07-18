@@ -1,5 +1,5 @@
-// Package account .....
-package account
+// Package jsonapi .....
+package jsonapi
 
 import (
 	"fmt"
