@@ -3,7 +3,9 @@ package jsonapi
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -58,24 +60,26 @@ func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Requ
 
 // Do invokes a 3rd Party REST API endpoint and recieves a API response back.
 // The response body is the decoded inside the value pointed by data
-// TODO:: change *http.Response to custom Response
-func (c *Client) Do(req *http.Request, data interface{}) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, data interface{}) (*http.Response, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("error: nil context found")
+	}
+
+	req = req.WithContext(ctx)
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
-		// TODO:: process err
-		// maybe introduce ctx context.Context as param and then do as below:
-		// select {
-		// case <-ctx.Done():
-		// 	return nil, ctx.Err()
-		// default:
-		return nil, err
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
 	}
 	defer resp.Body.Close()
 
 	decErr := json.NewDecoder(resp.Body).Decode(data)
 	if decErr == io.EOF {
-		decErr = nil // ignore EOF errors caused by empty response body
+		decErr = nil
 	}
 	if decErr != nil {
 		err = decErr

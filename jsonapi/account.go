@@ -1,10 +1,14 @@
 package jsonapi
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
 
+// Account represents an account from JsonAPI
+
+// An Account represents a bank account that is registered with Form3
 type Account struct {
 	UserID int    `json:"userId"`
 	ID     int    `json:"id"`
@@ -12,11 +16,14 @@ type Account struct {
 	Body   string `json:"body"`
 }
 
+// AccountsService conducts the conversation with account related
+// resources of JsonAPI
 type AccountsService struct {
 	client *Client
 }
 
-func (as *AccountsService) Fetch(id string) (*Account, *http.Response, error) {
+// Fetch retrives the account information
+func (as *AccountsService) Fetch(ctx context.Context, id string) (*Account, *http.Response, error) {
 	// create the resource
 	u := fmt.Sprintf("posts/%s", id)
 
@@ -27,7 +34,7 @@ func (as *AccountsService) Fetch(id string) (*Account, *http.Response, error) {
 	}
 
 	data := new(Account)
-	resp, err := as.client.Do(req, data)
+	resp, err := as.client.Do(ctx, req, data)
 	if err != nil {
 		return nil, resp, err
 	}
