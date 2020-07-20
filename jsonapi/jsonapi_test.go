@@ -14,19 +14,32 @@ const (
 	apiURL string = "/api-url"
 )
 
-func setup() (mux *http.ServeMux, client *Client, teardown func()) {
+var (
+	mux *http.ServeMux
+
+	srv *httptest.Server
+
+	client *Client
+
+	ctx = context.TODO()
+)
+
+func setup() {
 	mux = http.NewServeMux()
-	srv := httptest.NewServer(mux)
+	srv = httptest.NewServer(mux)
 	client = NewClient()
 
 	url := srv.URL + apiURL + "/"
 	client.BaseURL = url
 
-	return mux, client, srv.Close
+}
+
+func teardown() {
+	srv.Close()
 }
 
 func TestDo_BadRequest(t *testing.T) {
-	mux, client, teardown := setup()
+	setup()
 	defer teardown()
 
 	// program the mock
@@ -36,7 +49,7 @@ func TestDo_BadRequest(t *testing.T) {
 
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s", "."), nil)
 
-	res, err := client.Do(context.Background(), req, nil)
+	res, err := client.Do(ctx, req, nil)
 	if err == nil {
 		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusBadRequest))
 	}
@@ -48,7 +61,7 @@ func TestDo_BadRequest(t *testing.T) {
 }
 
 func TestDo_NotFound(t *testing.T) {
-	mux, client, teardown := setup()
+	setup()
 	defer teardown()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +71,7 @@ func TestDo_NotFound(t *testing.T) {
 	id := "not-found-id"
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
 
-	res, err := client.Do(context.Background(), req, nil)
+	res, err := client.Do(ctx, req, nil)
 	if err == nil {
 		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusNotFound))
 	}
@@ -70,7 +83,7 @@ func TestDo_NotFound(t *testing.T) {
 }
 
 func TestOK_OK(t *testing.T) {
-	mux, client, teardown := setup()
+	setup()
 	defer teardown()
 
 	type test struct {
@@ -86,7 +99,7 @@ func TestOK_OK(t *testing.T) {
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
 	data := new(test)
 
-	res, err := client.Do(context.Background(), req, data)
+	res, err := client.Do(ctx, req, data)
 	if err != nil {
 		t.Errorf("expected: HTTP %d success, got error: %v", http.StatusOK, err)
 	}
@@ -104,12 +117,13 @@ func TestOK_OK(t *testing.T) {
 }
 
 func TestDo_nilContext(t *testing.T) {
-	_, client, teardown := setup()
+	setup()
 	defer teardown()
 
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s", "."), nil)
 	_, err := client.Do(nil, req, nil)
 
+	// TODO:: change from reflect to normal
 	if !reflect.DeepEqual(err, fmt.Errorf("error: nil context found")) {
 		t.Errorf("expected `error: nil context found`")
 	}
