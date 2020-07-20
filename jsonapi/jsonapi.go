@@ -1,18 +1,20 @@
-// Package account .....
-package account
+// Package jsonapi .....
+package jsonapi
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 )
 
 const (
 	// BaseURL for JSON Placeholder REST API
-	defaultBaseURL = "https://jsonplaceholder.typicode.com/"
+	baseURL = "https://jsonplaceholder.typicode.com/"
 
-	//defaultMediaType = "application/vnd.api+json"
+	mediaType = "application/vnd.api+json"
 )
 
 // Client is responsible for communicating with JSON Placeholder API.
@@ -22,60 +24,68 @@ type Client struct {
 
 	Client *http.Client
 
-	Accounts AccountsService
+	Accounts *AccountsService
 }
 
 // NewClient func is responsible for creating a new client
 func NewClient() *Client {
 	c := &Client{
 		Client:  &http.Client{},
-		BaseURL: defaultBaseURL,
+		BaseURL: baseURL,
 	}
-	c.Accounts.client = c
-	c.Accounts = c.Accounts
+	c.Accounts = &AccountsService{client: c}
+
 	return c
 }
 
 // NewRequest creates a custom new http request by setting the method, url and body
 func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Request, error) {
 
-	var buf io.ReadWriter
-	if data != nil { // mostly for POST, PUT etc.
-		buf = &bytes.Buffer{}
-		enc := json.NewEncoder(buf)
-		enc.SetEscapeHTML(false)
-		err := enc.Encode(data)
+	buf := new(bytes.Buffer)
+	if data != nil {
+		err := json.NewEncoder(buf).Encode(data)
 		if err != nil {
 			return nil, err
 		}
 	}
-	//TODO:: change defaultBaseURL to c.BaseURL
+
 	url := c.BaseURL + resource
 
 	req, err := http.NewRequest(verb, url, buf)
-	return req, err
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", mediaType)
+	req.Header.Add("Accept", mediaType)
+
+	return req, nil
 }
 
 // Do invokes a 3rd Party REST API endpoint and recieves a API response back.
 // The response body is the decoded inside the value pointed by data
-// TODO:: change *http.Response to custom Response
-func (fc *Client) Do(req *http.Request, data interface{}) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, data interface{}) (*http.Response, error) {
+	if ctx == nil {
+		return nil, fmt.Errorf("error: nil context found")
+	}
 
-	resp, err := fc.Client.Do(req)
+	req = req.WithContext(ctx)
+
+	resp, err := c.Client.Do(req)
 	if err != nil {
-		// TODO:: process err
-		// maybe introduce ctx context.Context as param and then do as below:
-		// select {
-		// case <-ctx.Done():
-		// 	return nil, ctx.Err()
-		// default:
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+		}
+
 		return nil, err
 	}
 	defer resp.Body.Close()
 
 	decErr := json.NewDecoder(resp.Body).Decode(data)
 	if decErr == io.EOF {
-		decErr = nil // ignore EOF errors caused by empty response body
+		decErr = nil
 	}
 	if decErr != nil {
 		err = decErr

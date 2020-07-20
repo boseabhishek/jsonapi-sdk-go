@@ -1,14 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"go-rest/account"
+	"go-rest/jsonapi"
 )
 
 func main() {
 
-	client := account.NewClient()
-	d, _, err := client.Accounts.Fetch("1")
+	client := jsonapi.NewClient()
+	d, _, err := client.Accounts.Fetch(context.Background(), "1")
 	if err != nil {
 		fmt.Printf("Error: %+v\n", err)
 		return
