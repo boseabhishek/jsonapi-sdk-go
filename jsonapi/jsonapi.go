@@ -24,7 +24,7 @@ type Client struct {
 
 	Client *http.Client
 
-	Accounts AccountsService
+	Accounts *AccountsService
 }
 
 // NewClient func is responsible for creating a new client
@@ -33,8 +33,8 @@ func NewClient() *Client {
 		Client:  &http.Client{},
 		BaseURL: baseURL,
 	}
-	c.Accounts.client = c
-	c.Accounts = c.Accounts
+	c.Accounts = &AccountsService{client: c}
+
 	return c
 }
 
