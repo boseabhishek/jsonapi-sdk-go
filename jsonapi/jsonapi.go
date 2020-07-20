@@ -49,7 +49,6 @@ func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Requ
 		}
 	}
 
-	//TODO:: change defaultBaseURL to c.BaseURL
 	url := c.BaseURL + resource
 
 	req, err := http.NewRequest(verb, url, buf)
