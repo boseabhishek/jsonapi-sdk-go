@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -66,7 +65,7 @@ func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Requ
 // The response body is the decoded inside the value pointed by data
 func (c *Client) Do(ctx context.Context, req *http.Request, data interface{}) (*http.Response, error) {
 	if ctx == nil {
-		return nil, fmt.Errorf("error: nil context found")
+		return nil, fmt.Errorf("error context found is %v", ctx)
 	}
 
 	req = req.WithContext(ctx)
@@ -83,12 +82,9 @@ func (c *Client) Do(ctx context.Context, req *http.Request, data interface{}) (*
 	}
 	defer resp.Body.Close()
 
-	decErr := json.NewDecoder(resp.Body).Decode(data)
-	if decErr == io.EOF {
-		decErr = nil
-	}
-	if decErr != nil {
-		err = decErr
+	err = json.NewDecoder(resp.Body).Decode(data)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding response body: %v", err)
 	}
 
 	// TODO:: process the reposne before returning
