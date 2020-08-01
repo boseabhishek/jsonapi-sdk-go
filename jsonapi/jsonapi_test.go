@@ -29,7 +29,8 @@ func setup() {
 	srv = httptest.NewServer(mux)
 	client = NewClient()
 
-	url := srv.URL + apiURL + "/"
+	// TODO:: explore url to get rid of trailing /
+	url := srv.URL + "/"
 	client.BaseURL = url
 
 }
@@ -47,42 +48,15 @@ func TestDo_BadRequest(t *testing.T) {
 		http.Error(w, "Bad Request", 400)
 	})
 
-	req, _ := client.NewRequest("GET", fmt.Sprintf("%s", "."), nil)
+	req, _ := client.NewRequest(http.MethodGet, ".in", nil)
 
-	res, err := client.Do(ctx, req, nil)
+	_, err := client.Do(ctx, req, nil)
 	if err == nil {
 		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusBadRequest))
 	}
-
-	if res.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected: HTTP %s error, got: %s",
-			http.StatusText(http.StatusBadRequest), http.StatusText(res.StatusCode))
-	}
 }
 
-func TestDo_NotFound(t *testing.T) {
-	setup()
-	defer teardown()
-
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, "Not Found", 404)
-	})
-
-	id := "not-found-id"
-	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
-
-	res, err := client.Do(ctx, req, nil)
-	if err == nil {
-		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusNotFound))
-	}
-
-	if res.StatusCode != http.StatusNotFound {
-		t.Errorf("expected: HTTP %s error, got: %s",
-			http.StatusText(http.StatusNotFound), http.StatusText(res.StatusCode))
-	}
-}
-
-func TestOK_OK(t *testing.T) {
+func TestDo_OK(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -90,13 +64,12 @@ func TestOK_OK(t *testing.T) {
 		Key string
 	}
 
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/id", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{"Key":"value"}`)
 	})
 
-	id := "present-id"
-	req, _ := client.NewRequest("GET", fmt.Sprintf("%s%s", client.BaseURL, id), nil)
+	req, _ := client.NewRequest("GET", "/id", nil)
 	data := new(test)
 
 	res, err := client.Do(ctx, req, data)
