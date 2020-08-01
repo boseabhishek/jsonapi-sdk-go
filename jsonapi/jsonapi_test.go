@@ -48,12 +48,13 @@ func TestDo_BadRequest(t *testing.T) {
 		http.Error(w, "Bad Request", 400)
 	})
 
-	req, _ := client.NewRequest(http.MethodGet, ".in", nil)
+	req, _ := client.NewRequest(http.MethodGet, "/", nil)
 
 	_, err := client.Do(ctx, req, nil)
 	if err == nil {
 		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusBadRequest))
 	}
+
 }
 
 func TestDo_OK(t *testing.T) {

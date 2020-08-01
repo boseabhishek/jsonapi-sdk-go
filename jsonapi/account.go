@@ -25,7 +25,7 @@ type AccountsService struct {
 // Fetch retrives the account information
 func (as *AccountsService) Fetch(ctx context.Context, id string) (*Account, *http.Response, error) {
 	if id == "" {
-		return nil, nil, fmt.Errorf("id %+v can't be blank or empty", id)
+		return nil, nil, fmt.Errorf("id can't be blank or empty")
 	}
 
 	// create the resource
