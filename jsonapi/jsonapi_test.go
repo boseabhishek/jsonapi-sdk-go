@@ -10,10 +10,6 @@ import (
 	"testing"
 )
 
-const (
-	apiURL string = "/api-url"
-)
-
 var (
 	mux *http.ServeMux
 
@@ -57,7 +53,7 @@ func TestPerform_BadRequest(t *testing.T) {
 
 }
 
-func TestPerform_OK(t *testing.T) {
+func TestPerform_Success(t *testing.T) {
 	setup()
 	defer teardown()
 

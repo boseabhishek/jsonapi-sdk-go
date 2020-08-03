@@ -22,7 +22,8 @@ type AccountsService struct {
 	client *Client
 }
 
-// Fetch retrives the account information
+// Fetch retrives the account information given an id
+// TODO: handle response here and get rid of response
 func (as *AccountsService) Fetch(ctx context.Context, id string) (*Account, *http.Response, error) {
 	if id == "" {
 		return nil, nil, fmt.Errorf("id can't be blank or empty")
@@ -37,11 +38,35 @@ func (as *AccountsService) Fetch(ctx context.Context, id string) (*Account, *htt
 		return nil, nil, err
 	}
 
-	data := new(Account)
-	resp, err := as.client.Perform(ctx, req, data)
+	ac := new(Account)
+	resp, err := as.client.Perform(ctx, req, ac)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return data, resp, nil
+	return ac, resp, nil
+}
+
+// List retrives all the accounts
+// TODO: add ListOptions kind of thinhg with page and limit etc
+// TODO: handle response here and get rid of response
+func (as *AccountsService) List(ctx context.Context) ([]*Account, *http.Response, error) {
+
+	// create the resource
+	u := fmt.Sprintf("posts")
+
+	// create a http request
+	req, err := as.client.NewRequest(http.MethodGet, u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var acs []*Account
+
+	resp, err := as.client.Perform(ctx, req, &acs)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return acs, resp, nil
 }
