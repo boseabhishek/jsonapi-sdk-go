@@ -44,6 +44,8 @@ func TestFetch_BlankId(t *testing.T) {
 
 	_, _, err := client.Accounts.Fetch(ctx, "")
 
+	// TODO: custom error handling must be implemented later
+	// avoid reflect.DeepEqual 
 	if !reflect.DeepEqual(err, fmt.Errorf("id can't be blank or empty")) {
 		t.Fatalf("Accounts.Fetch err recieved %+v", err)
 	}

@@ -97,6 +97,8 @@ func TestDo_nilContext(t *testing.T) {
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s", "."), nil)
 	_, err := client.Perform(nil, req, nil)
 
+	// TODO: custom error handling must be implemented later
+	// avoid reflect.DeepEqual
 	if !reflect.DeepEqual(err, fmt.Errorf("nil context found")) {
 		t.Errorf("expected `nil context found`")
 	}
