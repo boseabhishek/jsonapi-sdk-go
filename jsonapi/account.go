@@ -38,7 +38,7 @@ func (as *AccountsService) Fetch(ctx context.Context, id string) (*Account, *htt
 	}
 
 	data := new(Account)
-	resp, err := as.client.Do(ctx, req, data)
+	resp, err := as.client.Perform(ctx, req, data)
 	if err != nil {
 		return nil, resp, err
 	}

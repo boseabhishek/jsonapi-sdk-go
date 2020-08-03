@@ -44,10 +44,8 @@ func TestFetch_BlankId(t *testing.T) {
 
 	_, _, err := client.Accounts.Fetch(ctx, "")
 
-	expectedErr := fmt.Errorf("id can't be blank or empty")
-
-	if err.Error() != expectedErr.Error() {
-		t.Fatalf("Accounts.Fetch expected error: %v got: %v", expectedErr, err)
+	if !reflect.DeepEqual(err, fmt.Errorf("id can't be blank or empty")) {
+		t.Fatalf("Accounts.Fetch err recieved %+v", err)
 	}
 
 }

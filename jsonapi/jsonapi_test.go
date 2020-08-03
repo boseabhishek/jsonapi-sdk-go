@@ -39,7 +39,7 @@ func teardown() {
 	srv.Close()
 }
 
-func TestDo_BadRequest(t *testing.T) {
+func TestPerform_BadRequest(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -50,14 +50,14 @@ func TestDo_BadRequest(t *testing.T) {
 
 	req, _ := client.NewRequest(http.MethodGet, "/", nil)
 
-	_, err := client.Do(ctx, req, nil)
+	_, err := client.Perform(ctx, req, nil)
 	if err == nil {
 		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusBadRequest))
 	}
 
 }
 
-func TestDo_OK(t *testing.T) {
+func TestPerform_OK(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -73,7 +73,7 @@ func TestDo_OK(t *testing.T) {
 	req, _ := client.NewRequest("GET", "/id", nil)
 	data := new(test)
 
-	res, err := client.Do(ctx, req, data)
+	res, err := client.Perform(ctx, req, data)
 	if err != nil {
 		t.Errorf("expected: HTTP %d success, got error: %v", http.StatusOK, err)
 	}
@@ -95,10 +95,9 @@ func TestDo_nilContext(t *testing.T) {
 	defer teardown()
 
 	req, _ := client.NewRequest("GET", fmt.Sprintf("%s", "."), nil)
-	_, err := client.Do(nil, req, nil)
+	_, err := client.Perform(nil, req, nil)
 
-	// TODO:: change from reflect to normal
-	if !reflect.DeepEqual(err, fmt.Errorf("error: nil context found")) {
-		t.Errorf("expected `error: nil context found`")
+	if !reflect.DeepEqual(err, fmt.Errorf("nil context found")) {
+		t.Errorf("expected `nil context found`")
 	}
 }

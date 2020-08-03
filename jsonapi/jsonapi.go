@@ -61,11 +61,11 @@ func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Requ
 	return req, nil
 }
 
-// Do invokes a 3rd Party REST API endpoint and recieves a API response back.
+// Perform invokes a 3rd Party REST API endpoint and recieves a API response back.
 // The response body is the decoded inside the value pointed by data
-func (c *Client) Do(ctx context.Context, req *http.Request, data interface{}) (*http.Response, error) {
+func (c *Client) Perform(ctx context.Context, req *http.Request, data interface{}) (*http.Response, error) {
 	if ctx == nil {
-		return nil, fmt.Errorf("error context found is %v", ctx)
+		return nil, fmt.Errorf("nil context found")
 	}
 
 	req = req.WithContext(ctx)
@@ -84,7 +84,7 @@ func (c *Client) Do(ctx context.Context, req *http.Request, data interface{}) (*
 
 	err = json.NewDecoder(resp.Body).Decode(data)
 	if err != nil {
-		return nil, fmt.Errorf("error decoding response body: %v", err)
+		return nil, fmt.Errorf("decoding response body: %v", err)
 	}
 
 	// TODO:: process the reposne before returning
