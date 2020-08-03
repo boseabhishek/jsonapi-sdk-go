@@ -90,7 +90,7 @@ func TestPerform_OK(t *testing.T) {
 
 }
 
-func TestDo_nilContext(t *testing.T) {
+func TestPerform_nilContext(t *testing.T) {
 	setup()
 	defer teardown()
 
