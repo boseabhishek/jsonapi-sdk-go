@@ -1,4 +1,3 @@
-// Package jsonapi .....
 package jsonapi
 
 import (
@@ -11,7 +10,7 @@ import (
 )
 
 const (
-	// BaseURL for JSON Placeholder REST API
+	// BaseURL for Form3 Fake API
 	baseURL = "http://localhost:8080/"
 
 	mediaType = "application/vnd.api+json"
@@ -66,7 +65,7 @@ func (c *Client) NewRequest(verb, resource string, data interface{}) (*http.Requ
 // The response body is the decoded inside the value pointed by data
 func (c *Client) Perform(ctx context.Context, req *http.Request, data interface{}) (*http.Response, error) {
 	if ctx == nil {
-		return nil, fmt.Errorf("nil context found")
+		return nil, &Error{Type: UserErrorType, Message: "nil context found"}
 	}
 
 	req = req.WithContext(ctx)
@@ -86,11 +85,11 @@ func (c *Client) Perform(ctx context.Context, req *http.Request, data interface{
 	// handle resp status codes
 	if c := res.StatusCode; 400 <= c && c <= 499 {
 		return nil, fmt.Errorf("client error: %+v",
-			&Error{Code: res.StatusCode, Message: errMessage(res)})
+			&Error{Type: HttpErrorType, Code: res.StatusCode, Message: errMessage(res)})
 	}
 	if c := res.StatusCode; 500 <= c && c <= 599 {
 		return nil, fmt.Errorf("server error: %+v",
-			&Error{Code: res.StatusCode, Message: errMessage(res)})
+			&Error{Type: HttpErrorType, Code: res.StatusCode, Message: errMessage(res)})
 	}
 
 	err = json.NewDecoder(res.Body).Decode(data)
@@ -98,22 +97,7 @@ func (c *Client) Perform(ctx context.Context, req *http.Request, data interface{
 		return nil, fmt.Errorf("decoding response body: %v", err)
 	}
 
-	// TODO:: process the reposne before returning
-	// response := newResponse(resp)
 	return res, err
-}
-
-// Error custom error message
-type Error struct {
-	// HTTP Response Status Code
-	Code int
-
-	// Custom Response Error message
-	Message string
-}
-
-func (e *Error) Error() string {
-	return fmt.Sprintf("Status Code: %v Error Message: %v", e.Code, e.Message)
 }
 
 func errMessage(res *http.Response) string {

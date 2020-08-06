@@ -1,4 +1,3 @@
-// Package jsonapi .....
 package jsonapi
 
 import (
@@ -42,6 +41,24 @@ func TestPerform_BadRequest(t *testing.T) {
 	// program the mock
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad Request", 400)
+	})
+
+	req, _ := client.NewRequest(http.MethodGet, "/", nil)
+
+	_, err := client.Perform(ctx, req, nil)
+	if err == nil {
+		t.Fatalf("expected: HTTP %s error, got no error.", http.StatusText(http.StatusBadRequest))
+	}
+
+}
+
+func TestPerform_ServerError(t *testing.T) {
+	setup()
+	defer teardown()
+
+	// program the mock
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "Internal Server Error", 500)
 	})
 
 	req, _ := client.NewRequest(http.MethodGet, "/", nil)

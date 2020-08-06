@@ -9,9 +9,19 @@ import (
 func main() {
 
 	client := jsonapi.NewClient()
-	//d, _, err := client.Accounts.Fetch(context.Background(), "79c9d274-d72f-11ea-87d0-0242ac130003")
-	//acs, _, err := client.Accounts.List(context.Background())
-	_, _, err := client.Accounts.Create(context.Background(), nil)
+	//d, err := client.Accounts.Fetch(context.Background(), "79c9d274-d72f-11ea-87d0-0242ac130003")
+	//acs, err := client.Accounts.List(context.Background())
+	/* acr := &jsonapi.AccountCreateRequest{
+		CountryCode:           "TT",
+		BankID:                "BANKID1",
+		BankIDCode:            "BANKIDCODE",
+		Bic:                   "NWBKGB22",
+		Iban:                  "IBAN123",
+		AccountClassification: "personal",
+	}
+
+	_, err := client.Accounts.Create(context.Background(), acr) */
+	_, err := client.Accounts.Delete(context.Background(), "e2a0091e-00c9-aef7-1854-8abaf4aa5db0", 0)
 	if err != nil {
 		fmt.Printf("Error: %+v\n", err)
 		return
