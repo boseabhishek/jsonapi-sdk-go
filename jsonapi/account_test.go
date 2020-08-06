@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestList(t *testing.T) {
+/* func TestList(t *testing.T) {
 	setup()
 	defer teardown()
 
@@ -28,40 +28,65 @@ func TestList(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Accounts.Fetch returned error: %v", err)
 	}
-	
-	want := []*Account{{UserID: 1,
-		ID: 1, Title: "title 1", Body: "body 1"}}
+
+	want := &Account{
+		Data: Data{
+			Type:           DataType,
+			ID:             "some-id",
+			OrganisationID: "some-id",
+			Version:        0,
+			Attributes: Attributes{
+				Country: "TT", BankID: "BANKID",
+				BankIDCode: "BANKIDCODE", Bic: "vbgb",
+				AccountClassification: "Personal"}}}
 
 	if !reflect.DeepEqual(account, want) {
 		t.Errorf("Account data fetched: got=%#v\nwant=%#v", account, want)
 	}
 
-}
+} */
 
 func TestFetch(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/v1/organisation/accounts/some-id", func(w http.ResponseWriter, r *http.Request) {
 		if m := http.MethodGet; m != r.Method {
 			t.Errorf("expected method: %v, got: %v", m, r.Method)
 		}
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprint(w, `{
-			"userId": 1,
-			"id": 1,
-			"title": "title 1",
-			"body": "body 1"
-		  }`)
+			"data": {
+				"type": "accounts",
+				"id": "some-id",
+				"organisation_id": "some-id",
+				"version": 0,
+				"attributes": {
+					"country": "TT",
+					"bank_id": "BANKID",
+					"bank_id_code": "BANKIDCODE",
+					"bic": "vbgb",
+					"account_classification": "Personal"
+				}
+			}
+		}`)
 	})
 
-	account, _, err := client.Accounts.Fetch(ctx, "1")
+	account, _, err := client.Accounts.Fetch(ctx, "some-id")
 	if err != nil {
 		t.Fatalf("Accounts.Fetch returned error: %v", err)
 	}
 
-	want := &Account{UserID: 1,
-		ID: 1, Title: "title 1", Body: "body 1"}
+	want := &Account{
+		Data: Data{
+			Type:           DataType,
+			ID:             "some-id",
+			OrganisationID: "some-id",
+			Version:        0,
+			Attributes: Attributes{
+				Country: "TT", BankID: "BANKID",
+				BankIDCode: "BANKIDCODE", Bic: "vbgb",
+				AccountClassification: "Personal"}}}
 
 	if !reflect.DeepEqual(account, want) {
 		t.Errorf("Account data fetched: got=%#v\nwant=%#v", account, want)
@@ -87,7 +112,7 @@ func TestFetch_NonMatchingJsonBodyRecieved(t *testing.T) {
 	setup()
 	defer teardown()
 
-	mux.HandleFunc("/posts/1", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/v1/organisation/accounts/some-id", func(w http.ResponseWriter, r *http.Request) {
 		if m := http.MethodGet; m != r.Method {
 			t.Errorf("expected method: %v, got: %v", m, r.Method)
 		}
@@ -98,13 +123,21 @@ func TestFetch_NonMatchingJsonBodyRecieved(t *testing.T) {
 		  }`)
 	})
 
-	account, _, err := client.Accounts.Fetch(ctx, "1")
+	account, _, err := client.Accounts.Fetch(ctx, "some-id")
 	if err != nil {
 		t.Fatalf("Accounts.Fetch error: %v", err)
 	}
 
-	want := &Account{UserID: 1,
-		ID: 1, Title: "title 1", Body: "body 1"}
+	want := &Account{
+		Data: Data{
+			Type:           DataType,
+			ID:             "some-id",
+			OrganisationID: "some-id",
+			Version:        0,
+			Attributes: Attributes{
+				Country: "TT", BankID: "BANKID",
+				BankIDCode: "BANKIDCODE", Bic: "vbgb",
+				AccountClassification: "Personal"}}}
 
 	if reflect.DeepEqual(account, want) {
 		t.Errorf("Accounts.Fetch non-matching json recieved got=%#v\nwant=%#v", account, want)
