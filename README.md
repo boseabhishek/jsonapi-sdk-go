@@ -1,1 +1,1 @@
-# go-rest-lib
+# jsonapi-sdk-go
